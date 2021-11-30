@@ -1,18 +1,22 @@
+import styled from 'styled-components'
 import { useState, useEffect } from 'react'
 import { useHistory } from 'react-router'
-import styled from 'styled-components'
-import { Grid, Input, Button, Text } from "../elements"
+import { getCookie, setCookie, deleteCookie } from '../shared/Cookie'
+import { useDispatch, useSelector } from 'react-redux'
+import { actionCreators as userActions } from '../redux/modules/user'
 
 import Logo from '../components/Logo'
+import { Grid, Input, Button, Text } from "../elements"
 
 const Login = () => {
+  const dispatch = useDispatch()
   const history = useHistory()
   const [userInfo, setUserInfo] = useState({user_email: '', user_pw: ''})
   const [loginDisabled, setLoginDisabled] = useState(false)
+  const loginFailed = useSelector(state => state.user.error)
 
   useEffect(() => {
     const pass = Object.values(userInfo).some(value => value === '')
-    console.log(pass)
     setLoginDisabled(pass)
   }, [userInfo])
 
@@ -21,8 +25,7 @@ const Login = () => {
   }
 
   const handleClickLoginBtn = () => {
-    console.log('로그인 GO !')
-    console.log(userInfo)
+    dispatch(userActions.loginFB(userInfo))
   }
 
   const handleKeyUpLoginForm = (e) => {
@@ -30,6 +33,20 @@ const Login = () => {
       ...userInfo,
       [e.target.name]: e.target.value
     })
+  }
+
+  const setFailedMessage = () => {
+    if (!loginFailed) {
+      return null
+    } else if (loginFailed === 'auth/invalid-email') {
+      return <Text center padding="20px 0 0 0" size="13px" color="#ff5722">
+                존재하지 않는 이메일 입니다.
+              </Text>
+    } else if (loginFailed === 'auth/wrong-password') {
+      return <Text center padding="20px 0 0 0" size="13px" color="#ff5722">
+                비밀번호가 옳바르지 않습니다.
+              </Text>
+    }
   }
 
   return (
@@ -44,20 +61,20 @@ const Login = () => {
         <Logo maxWidth="180px" margin="0 auto 30px auto"/>
 
         <Grid margin="0 0 6px 0">
-          <Input _onKeyUp={handleKeyUpLoginForm} type="email" name="user_email" placeholder="사용자 이메일" />
+          <Input _onKeyUp={handleKeyUpLoginForm} type="email" name="user_email" placeholder="사용자 이메일" autoComplete="off"/>
         </Grid>
 
         <Grid margin="0 0 14px 0">
-          <Input _onKeyUp={handleKeyUpLoginForm} type="password" name="user_pw" placeholder="비밀번호" />
+          <Input _onKeyUp={handleKeyUpLoginForm} type="password" name="user_pw" placeholder="비밀번호"  autoComplete="off" />
         </Grid>
 
         <Grid>
           <Button _onClick={handleClickLoginBtn} width="100%" size="15px" bold disabled={loginDisabled}>로그인</Button>
         </Grid>
 
-        <Text center padding="20px 0 0 0" size="13px" color="#ff5722">
-          존재하지 않는 아이디 입니다.
-        </Text>
+        {
+          setFailedMessage()
+        }
 
       </Grid>
 

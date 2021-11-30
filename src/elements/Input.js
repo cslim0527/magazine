@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 const Input = (props) => {
-  const { width, height, type, bg, placeholder, padding, margin, border, name, _onKeyUp, children } = props
+  const { width, height, type, bg, placeholder, padding, margin, border, name, autoComplete, _onKeyUp, children } = props
   const labelStyles = {
     width,
     height
@@ -15,6 +15,7 @@ const Input = (props) => {
     border,
     padding,
     margin,
+    autoComplete,
     onKeyUp: _onKeyUp
   }
 
