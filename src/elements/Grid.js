@@ -6,7 +6,7 @@ import styled from 'styled-components'
   초기 렌더링에서 나오는 오류 동작에는 문제가 없지만 오류 콘솔 뜨는것 확인하고 안뜨게 할것
 */
 const Grid = (props) => {
-  const { is_flex, is_container, width, height, padding, margin, border, round, bg, children } = props
+  const { className, style, is_flex, is_container, width, height, padding, margin, border, round, bg, children } = props
   const styles = {
     is_flex,
     is_container,
@@ -16,7 +16,9 @@ const Grid = (props) => {
     margin,
     border,
     round,
-    bg
+    bg,
+    style,
+    className
   }
 
   return (

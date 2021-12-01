@@ -8,9 +8,9 @@ import { actionCreators as userActions } from '../redux/modules/user'
 import Logo from '../components/Logo'
 import PulseLoader from "react-spinners/PulseLoader";
 
-const SignUp = () => {
+const SignUp = (props) => {
   const dispatch = useDispatch()
-  const history = useHistory()
+  const history = props.history
 
   const alertObj = {
     user_email: false,

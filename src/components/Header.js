@@ -13,7 +13,7 @@ const Header = () => {
   const isLogin = useSelector(state => state.user.is_login)
   const _sessionKey = `firebase:authUser:${apiKey}:[DEFAULT]`
   const hasSession = sessionStorage.getItem(_sessionKey)
-  console.log(apiKey, hasSession, isLogin)
+
   const handleClickMoveLogin = () => {
     console.log('로그인!')
     history.push('/login')

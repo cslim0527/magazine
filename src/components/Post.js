@@ -3,10 +3,13 @@ import styled  from 'styled-components'
 
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
+import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import PopHeart from "../shared/PopHeart";
 import { Grid, Text, Img, Button } from "../elements"
+import Permit from "../shared/Permit";
 
 const Post = (props) => {
+  const history = props.history
   const { user_info, image_url, contents, comment_cnt, insert_dt } = props
   const [like, setLike] = useState(comment_cnt)
   const [heart, setHeart] = useState(false)
@@ -21,13 +24,17 @@ const Post = (props) => {
     }
   }
 
+  const handleClickDetailBtn = () => {
+    history.push('/detail')
+  }
+
   return (
       <Grid margin="20px 0" bg="#fff" border="border: 1px solid var(--border-color)" round>
         <Grid is_flex padding="16px">
 
           <Grid is_flex>
             <Img shape="circle" margin="0 10px 0 0" user_profile={ user_info.user_profile }/>
-            <Text bold margin="0 auto 0 0">{ user_info.user_name }</Text>
+            <Text bold margin="0 auto 0 0">{ user_info.user_nick }</Text>
           </Grid>
 
           <Grid is_flex>
@@ -49,6 +56,10 @@ const Post = (props) => {
 
         <Grid is_flex padding="16px">
           <Text bold>좋아요 {like}개</Text>
+
+          <Button _onClick={handleClickDetailBtn} style={{position: 'relative', top: '1x'}}size="11px" ver='heart-off' margin="0 0 0 auto">
+            <ChatBubbleOutlineIcon/>
+          </Button>
           <Button _onClick={handleClickHeartBtn} size="12px" ver={heart ? 'heart-on': 'heart-off'}>
             {heart ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
           </Button>

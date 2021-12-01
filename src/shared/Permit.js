@@ -6,7 +6,6 @@ const Permit = (props) => {
   const isLogin = useSelector(state => state.user.user)
   const _sessionKey = `firebase:authUser:${apiKey}:[DEFAULT]`
   const hasSession = sessionStorage.getItem(_sessionKey)
-  console.log('permit', isLogin, hasSession)
 
   if (hasSession && isLogin) {
     return (

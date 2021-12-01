@@ -11,6 +11,8 @@ import Header from '../components/Header'
 import PostList from '../pages/PostList'
 import Login from '../pages/Login'
 import SignUp from '../pages/SignUp'
+import PostWrite from '../pages/PostWrite'
+import PostDetail from '../pages/PostDetail'
 
 function App() {
   const { pathname } = useLocation()
@@ -36,6 +38,8 @@ function App() {
       <Route path="/" exact component={PostList} />
       <Route path="/login" exact component={Login} />
       <Route path="/signup" exact component={SignUp} />
+      <Route path="/postwrite" exact component={PostWrite} />
+      <Route path="/detail" exact component={PostDetail} />
     </React.Fragment>
   );
 }

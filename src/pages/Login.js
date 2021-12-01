@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import { useState, useEffect } from 'react'
-import { useHistory } from 'react-router'
 import { getCookie, setCookie, deleteCookie } from '../shared/Cookie'
 import { useDispatch, useSelector } from 'react-redux'
 import { actionCreators as userActions } from '../redux/modules/user'
@@ -8,16 +7,27 @@ import { actionCreators as userActions } from '../redux/modules/user'
 import Logo from '../components/Logo'
 import { Grid, Input, Button, Text } from "../elements"
 
-const Login = () => {
+const Login = (props) => {
   const dispatch = useDispatch()
-  const history = useHistory()
+  const history = props.history
   const [userInfo, setUserInfo] = useState({user_email: '', user_pw: ''})
   const [loginDisabled, setLoginDisabled] = useState(false)
   const loginFailed = useSelector(state => state.user.error)
 
+  const handleGlobalEnter = (e) => {
+    if (e.key === 'Enter') {
+      dispatch(userActions.loginFB(userInfo))
+    }
+  }
+
   useEffect(() => {
     const pass = Object.values(userInfo).some(value => value === '')
     setLoginDisabled(pass)
+    window.addEventListener('keyup', handleGlobalEnter)
+
+    return () => {
+      window.removeEventListener('keyup', handleGlobalEnter)
+    }
   }, [userInfo])
 
   const handleClickMoveSignUp = () => {
@@ -25,7 +35,8 @@ const Login = () => {
   }
 
   const handleClickLoginBtn = () => {
-    dispatch(userActions.loginFB(userInfo))
+    setLoginDisabled(true)
+    // dispatch(userActions.loginFB(userInfo))
   }
 
   const handleKeyUpLoginForm = (e) => {

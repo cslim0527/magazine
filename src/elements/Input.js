@@ -39,6 +39,7 @@ Input.defaultProps = {
 }
 
 const Label = styled.label`
+  width: ${({ width }) => width};
 
   input {
     width: 100%;

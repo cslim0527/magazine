@@ -1,7 +1,7 @@
 import styled from 'styled-components'
 
 const Button = (props) => {
-  const { ver, width, height, margin, bold, size, disabled, _onClick, children } = props
+  const { style, ver, width, height, margin, bold, size, disabled, _onClick, floating, circle, children } = props
   const styles = {
     ver,
     width,
@@ -9,6 +9,9 @@ const Button = (props) => {
     margin,
     bold,
     size,
+    floating,
+    circle,
+    style,
     onClick: _onClick
   }
 
@@ -26,20 +29,23 @@ Button.defaultProps = {
   margin: false,
   bold: false,
   size: 'inherit',
-  disabeld: false
+  disabeld: false,
+  floating: false,
+  circle: false,
 }
 
 const ButtonElem = styled.button`
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 4px;
+  border-radius: ${props => props.circle ? '50%' : '4px'};
   padding: 5px 9px;
   height: ${props => props.height};
+  flex-shrink: 0;
   ${props => props.width ? `width: ${props.width}` : ''};
   ${props => props.margin ? `margin: ${props.margin}` : ''};
   ${props => props.size ? `font-size: ${props.size}` : ''};
-
+  ${props => props.floating ? `position: fixed; z-index: 9999; ${props.floating}` : ''};
   ${ props => props.ver === 'white' && 'color: var(--button-bg); background-color: #fff'};
   ${ props => props.ver === 'blue' && 'color: #fff; background-color: var(--button-bg)'};
   ${ props => props.ver === 'heart-off' && 'color: #bbb'};

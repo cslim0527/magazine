@@ -53,6 +53,7 @@ const CircleElem = styled.div`
   background-image: url("${({ user_profile }) => user_profile}");
   background-size: cover;
   border-radius: 50%;
+  flex-shrink: 0;
 `
 
 export default Img

@@ -17,10 +17,6 @@ const initialState = {
   error: null
 }
 
-const userInitial = {
-  user_name: 'chansoo'
-}
-
 // action creator
 const logOut = createAction(LOG_OUT, () => ({}))
 const getUser = createAction(GET_USER, (user) => ({user}))
