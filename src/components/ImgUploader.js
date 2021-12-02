@@ -5,7 +5,7 @@ import AddIcon from '@material-ui/icons/Add'
 import PulseLoader from "react-spinners/PulseLoader"
 
 const ImgUploader = (props) => {
-  const { width, _onChange, isUploading, imageUrl } = props
+  const { width, _onChange, isUploading, imageUrl, accept } = props
   const styles = {
     width,
     onChange: _onChange,
@@ -17,7 +17,7 @@ const ImgUploader = (props) => {
     return (
       <Uploader {...styles}>
         <div className="ratio-box"></div>
-        <input type="file" />
+        <input type="file" accept={accept} />
       </Uploader>
     )
   }
@@ -28,7 +28,7 @@ const ImgUploader = (props) => {
         <GuideText>
           {isUploading ? <><PulseLoader color="#0095f6" size="5px"/> 업로드 중 </> : <><AddIcon/> 사진 선택</> }
         </GuideText>
-        <input type="file" disabled={isUploading}/>
+        <input type="file" disabled={isUploading} accept={accept}/>
       </div>
     </Uploader>
   )
@@ -38,7 +38,8 @@ ImgUploader.defaultProps = {
   width: '400px',
   hasFile: false,
   isUploading: false,
-  imageUrl: null
+  imageUrl: null,
+  accept: ''
 }
 
 const Uploader = styled.label`
@@ -53,7 +54,7 @@ const Uploader = styled.label`
     position: relative;
     padding-bottom: 75%;
     background-image: url("${props => props.imageUrl ? props.imageUrl : props.content_img}");
-    background-size: auto 100%;
+    background-size: contain;
     background-position: center;
     background-repeat: no-repeat;
   }

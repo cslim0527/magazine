@@ -1,7 +1,7 @@
-import React from 'react'
+import React, { forwardRef } from 'react'
 import styled from 'styled-components'
 
-const Textarea = (props) => {
+const Textarea = forwardRef((props, ref) => {
   const { style, _onChange, maxh, border, placeholder, padding, size, resize, width, height } = props
   const styles = {
     border,
@@ -16,9 +16,9 @@ const Textarea = (props) => {
   }
 
   return (
-    <TaBox {...styles}></TaBox>
+    <TaBox {...styles} ref={ref}></TaBox>
   )
-}
+})
 
 Textarea.defaultProps = {
   border: '1px solid var(--border-color)',

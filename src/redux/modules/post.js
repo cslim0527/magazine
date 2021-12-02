@@ -1,12 +1,15 @@
 import { createAction, handleActions } from 'redux-actions'
 import { produce } from 'immer'
 import { firestore } from '../../shared/firebase'
+import moment from 'moment'
 
 const SET_POST = "SET_POST"
 const ADD_POST = "ADD_POST"
+const SET_LOADING = "SET_LOADING"
 
 const initialState = {
-  list: []
+  list: [],
+  is_loading: false
 }
 
 const initialPost = {
@@ -18,53 +21,95 @@ const initialPost = {
   image_url: 'https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/OIGMK3BVRNBYNKWMUKJMFXBDG4.jpg',
   contents: '고양이네요!',
   comment_cnt: 10,
+  layout_type: 'top',
   insert_dt: '2021-02-27 10:00:00'
 }
 
 // action creator
 const setPost = createAction(SET_POST, (post_list) => ({post_list}))
 const addPost = createAction(ADD_POST, (post) => ({post}))
+const setLoading = createAction(SET_LOADING, (is_loading) => ({is_loading}))
 
 // middlewares
 const getPostFB = () => {
   return (dispatch, getState) => {
     const postDB = firestore.collection('post')
-    postDB
-      .get()
-      .then((docs) => {
+
+    // 20개씩 최신순으로 정렬
+    const query = postDB.orderBy('insert_dt', 'desc').limit(4)
+
+    query
+      .get().then((docs) => {
         const post_list = []
         docs.forEach(doc => {
-
-          const { user_nick, 
-                  user_profile, 
+          console.log('포스트 정보: ', doc.data())
+          const { user_info,
+                  file, 
                   image_url, 
                   contents, 
                   comment_cnt,
-                  insert_dt
+                  insert_dt,
+                  layout_type
                 } = doc.data()
 
           const post = {
             id: doc.id,
             user_info: {
-              user_nick,
-              user_profile,
+              ...user_info
+            },
+            file: {
+              ...file
             },
             image_url,
             contents,
             comment_cnt,
-            insert_dt
+            insert_dt,
+            layout_type
           }
 
           post_list.push(post)
-          dispatch(setPost(post_list))
         })
+
+        dispatch(setPost(post_list))
       })
   }
 }
 
 const addPostFB = (post) => {
-  return (dispath, getState, {history}) => {
-    
+  return (dispatch, getState, {history}) => {
+
+    const _post = {
+      user_info: {
+        ...getState().user.user
+      },
+      layout_type: post.layoutVal,
+      image_url: post.url,
+      contents: post.contents,
+      comment_cnt: 0,
+      file: {
+        uid: post.u_name,
+        name: post.name,
+        size: post.size
+      },
+      insert_dt: moment().format('YYYY-MM-DD hh:mm:ss')
+    }
+
+    const postDB = firestore.collection('post')
+    postDB
+      .add(_post)
+      .then((doc) => {
+        const post = {
+          ..._post,
+          id: doc.id
+        }
+
+        dispatch(addPost(post))
+        history.replace('/')
+      })
+      .catch(error => {
+        alert('[작성 오류] 게시물에 작성이 실패하였습니다.')
+        console.log('[작성 오류]', error)
+      })
   }
 }
 
@@ -74,14 +119,23 @@ export default handleActions({
     draft.list = action.payload.post_list
   }),
 
-  [ADD_POST]: (state, action) => produce(state, (draft) => {}),
+  [ADD_POST]: (state, action) => produce(state, (draft) => {
+    console.log('포스트 추가 시 로딩 상태: ', state)
+    draft.is_loading = false
+    draft.list.unshift(action.payload.post)
+  }),
 
+  [SET_LOADING]: (state, action) => produce(state, (draft) => {
+    draft.is_loading = action.payload.is_loading = true
+  })
 }, initialState)
 
 const actionCreators = {
   setPost,
   addPost,
-  getPostFB
+  setLoading,
+  getPostFB,
+  addPostFB
 }
 
 export { actionCreators }

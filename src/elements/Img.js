@@ -33,7 +33,8 @@ Img.defaultProps = {
   width: '32px',
   height: '32px',
   margin: false,
-  content_img: 'https://www.freeiconspng.com/uploads/no-image-icon-1.jpg'
+  content_img: 'https://www.freeiconspng.com/uploads/no-image-icon-1.jpg',
+  user_profile: 'https://toppng.com/uploads/preview/instagram-default-profile-picture-11562973083brycehrmyv.png'
 }
 
 const RatioBox = styled.div`
@@ -50,7 +51,7 @@ const CircleElem = styled.div`
   width: ${({ width }) => width };
   height: ${({ height }) => height };
   margin: ${({ margin }) => margin ? `${margin}` : '' };
-  background-image: url("${({ user_profile }) => user_profile}");
+  background-image: url("${({ user_profile }) => user_profile ? user_profile : Img.defaultProps.user_profile}");
   background-size: cover;
   border-radius: 50%;
   flex-shrink: 0;

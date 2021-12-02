@@ -1,21 +1,27 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useRef } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { storage } from '../shared/firebase'
+import { actionCreators as postActions } from '../redux/modules/post'
 
 import ImgUploader from "../components/ImgUploader"
 import { Grid, Button, Text } from "../elements"
 import Textarea from '../elements/Textarea'
-import Permit from '../shared/Permit'
+import PulseLoader from "react-spinners/PulseLoader";
 
 const PostWrite = (props) => {
   const history = props.history
+  const dispatch = useDispatch()
+  const taRef = useRef(null) 
   const userEmail = useSelector(state => state.user.user?.user_email)
+  const isLoading = useSelector(state => state.post.is_loading)
+  console.log('로딩이냐!!!!!!!!', isLoading)
+
+  const initailLayoutVal = {top: true, right: false, left: false}
+  const initialimageDetail = {name: '비어있음', size: '0', u_name: null, url: null }
   const [contents, setContents] = useState('')
-  const [layoutVal, setLayoutVal] = useState({top: true, right: false, left: false})
-  const [imageVal, setImageVal] = useState(null) // files 객체
-  const [imageUrl, setImageUrl] = useState(null) // snapshot url
-  const [imageDetail, setImageDetail] = useState({name: '비어있음', size: '0', u_name: null })
+  const [layoutVal, setLayoutVal] = useState(initailLayoutVal)
+  const [imageDetail, setImageDetail] = useState(initialimageDetail)
   const [isUploading, setIsUploading] = useState(false) // uploading 상태
 
   const byteCalc = (x) => {
@@ -34,81 +40,81 @@ const PostWrite = (props) => {
 
   const handleChangeFile = (e) => {
     const file = e.target.files[0]
-    const now = new Date().getTime()
-
-    setImageVal({
-      file,
-      u_name: `${userEmail}_${now}_${file.name}`
-    })
-  }
-
-  const removeFB = (imageName) => {
-    // 이미지가 비어있는 초기 상태일 경우 리턴
-    if (imageName === null) return
-
-    console.log('삭제 참조', imageName)
-
-    const _remove = storage.ref().child(`images/${imageName}`)
-    _remove.delete().then(function() {
-      // File deleted successfully
-      setImageUrl(null)
-      setImageDetail({name: '비어있음', size: '0', u_name: null })
-    }).catch(function(error) {
-      // Uh-oh, an error occurred!
-      alert('[오류] 이미지 정보를 처리 할 수 없습니다. \n 다시 시도해 주세요.')
-      console.log('[삭제 오류]', error)
-    });
-  }
-
-  const uploadFB = (imageObj) => {
-
-    // 새로운 이미지로 변경 시 이전 storage 데이터 삭제
-    if (imageObj.u_name !== imageDetail.u_name) {
-      removeFB(imageDetail.u_name)
+    const allowType = ['image/png', 'image/jpg', 'image/jpeg', 'image/gif']
+    const isAllowed = allowType.some(type => file.type === type)
+    if (!isAllowed) {
+      alert('이미지 파일 형식만 업로드 할 수 있습니다.')
+      return 
     }
 
-    // 이미지 업로드 실행
-    const _upload = storage.ref(`images/${imageObj.u_name}`).put(imageObj.file)
+    setIsUploading(true)
 
-    // 업로드 된 이미지 참조
-    _upload.then((snapshot) => {
-      snapshot.ref
-        .getDownloadURL().then((url) => {
-          setIsUploading(false)
-          setImageUrl(url)
-          setImageDetail({
-            u_name: imageObj.u_name,
-            size: byteCalc(imageObj.file.size),
-            name: imageObj.file.name
-          })
-        })
-    })
+    // file state 객체 변경
+    const now = new Date().getTime()
+
+    // dataURL 가져와서 preview 세팅 
+    const reader = new FileReader()
+    reader.readAsDataURL(file)
+    reader.onload = () => {
+      setImageDetail({
+        file: file,
+        name: file.name,
+        size: byteCalc(file.size),
+        url: reader.result,
+        u_name: `${userEmail}_${now}_${file.name}`
+      })
+
+      setIsUploading(false)
+    }
+
+    reader.onerror = () => {
+      console.log(reader.error)
+    }
+
+  }
+
+  const removeFB = () => {
+    // 이미지가 비어있는 초기 상태일 경우 리턴
+    if (imageDetail.u_name === null) return
+
+    setImageDetail({name: '비어있음', size: '0', u_name: null, url: null })
+
+    // const _remove = storage.ref().child(`images/${imageName}`)
+    // _remove.delete().then(function() {
+    //   // File deleted successfully
+    //   setImageDetail({name: '비어있음', size: '0', u_name: null, url: null })
+    // }).catch(function(error) {
+    //   // Uh-oh, an error occurred!
+    //   alert('[오류] 이미지 정보를 처리 할 수 없습니다. \n 다시 시도해 주세요.')
+    //   console.log('[삭제 오류]', error)
+    // });
+  }
+
+  const uploadFB = () => {
+    storage.ref(`images/${imageDetail.u_name}`).put(imageDetail.file)
   }
   
   const handleClickCancelUpload = () => {
-    removeFB(imageDetail.u_name)
+    removeFB()
   }
 
   const handleClickWriteBtn = () => {
-    const imageData = {
-      ...imageDetail,
-      url: imageUrl
+    if (contents === '') {
+      alert('내용을 입력해주세요.')
+      taRef.current.focus()
+      return
     }
 
-    // 이미지, 레이아웃, 내용 -> firestore DB 정보에 등록해야 할 것
-    console.log(layoutVal, contents, imageData)
+    if (imageDetail.file) {
+      uploadFB()
+    }
+
+    console.log('넘어갈 데이터',{layoutVal, contents, ...imageDetail})
+    dispatch(postActions.setLoading(true))
+    dispatch(postActions.addPostFB({layoutVal, contents, ...imageDetail}))
   }
 
-
-  useEffect(() => {
-    if (!imageVal) return
-    setImageUrl(null)
-    setIsUploading(true)
-    uploadFB(imageVal)
-  }, [imageVal])
-
   return (
-    <Permit>
       <WriteArea>
         <Grid is_container margin="25px auto 0 auto">
           <Grid padding="16px">
@@ -119,13 +125,13 @@ const PostWrite = (props) => {
             <Text bold size="15px" margin="0 0 20px 0">· 사진정보</Text>
 
             <Grid className="responsive-uploader" style={{alignItems: 'flex-start'}} is_flex height="216px;" padding="5px 0 0 0">
-              <ImgUploader _onChange={handleChangeFile} isUploading={isUploading} imageUrl={imageUrl}/>
+              <ImgUploader _onChange={handleChangeFile} isUploading={isUploading} imageUrl={imageDetail.url} accept="image/*"/>
               <Grid width="80%" margin="0 0 0 20px">
                 <Text margin="0 0 5px 0" bold>사진명</Text>
                 <Text margin="0 0 10px 0">{imageDetail.name}</Text>
                 <Text margin="0 0 5px 0" bold>용량</Text>
                 <Text margin="0 0 20px 0">{imageDetail.size}</Text>
-                { imageUrl && <Button _onClick={handleClickCancelUpload}>업로드 취소</Button> }
+                { imageDetail.url && <Button _onClick={handleClickCancelUpload}>업로드 취소</Button> }
               </Grid>
             </Grid>
           </Grid>
@@ -136,40 +142,40 @@ const PostWrite = (props) => {
 
             <Grid padding="0 8px">
               
-            <LayoutSelector>
-              <label className="layout-item">
-                <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="top" defaultChecked={layoutVal.top} />
-                  <div className="layout-cont">
-                    <div className="layout-guide top">
-                    <span className="block-txt">Text</span>
-                    <span className="block-img">Image</span>
+              <LayoutSelector>
+                <label className="layout-item">
+                  <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="top" defaultChecked={layoutVal.top} />
+                    <div className="layout-cont">
+                      <div className="layout-guide top">
+                      <span className="block-txt">Text</span>
+                      <span className="block-img">Image</span>
+                      </div>
+                      <span className="layout-name">내용 상단</span>
                     </div>
-                    <span className="layout-name">내용 상단</span>
-                  </div>
-              </label>
+                </label>
 
-              <label className="layout-item">
-                <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="right" defaultChecked={layoutVal.right}/>
-                  <div className="layout-cont">
-                    <div className="layout-guide right">
-                    <span className="block-img">Image</span>
-                    <span className="block-txt">Text</span>
+                <label className="layout-item">
+                  <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="right" defaultChecked={layoutVal.right}/>
+                    <div className="layout-cont">
+                      <div className="layout-guide right">
+                      <span className="block-img">Image</span>
+                      <span className="block-txt">Text</span>
+                      </div>
+                      <span className="layout-name">내용 우측</span>
                     </div>
-                    <span className="layout-name">내용 우측</span>
-                  </div>
-              </label>
+                </label>
 
-              <label className="layout-item">
-                <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="left" defaultChecked={layoutVal.left}/>
-                  <div className="layout-cont">
-                    <div className="layout-guide left">
-                    <span className="block-txt">Text</span>
-                    <span className="block-img">Image</span>
+                <label className="layout-item">
+                  <input onClick={handleChangeLayout} type="radio" name="layout-group" defaultValue="left" defaultChecked={layoutVal.left}/>
+                    <div className="layout-cont">
+                      <div className="layout-guide left">
+                      <span className="block-txt">Text</span>
+                      <span className="block-img">Image</span>
+                      </div>
+                      <span className="layout-name">내용 좌측</span>
                     </div>
-                    <span className="layout-name">내용 좌측</span>
-                  </div>
-              </label>
-            </LayoutSelector>
+                </label>
+              </LayoutSelector>
 
             </Grid>
           </Grid>
@@ -177,17 +183,19 @@ const PostWrite = (props) => {
           <Grid bg="white" margin="0 0 10px 0" border="border: 1px solid var(--border-color)" padding="16px">
             <Text bold size="15px" margin="0 0 20px 0">· 내용</Text>
             <Grid>
-              <Textarea _onChange={handleChangeContents} border="0" padding="0 8px" height="170px" placeholder="이곳에 내용을 입력하세요."/>
+              <Textarea ref={taRef} _onChange={handleChangeContents} border="0" padding="0 8px" height="170px" placeholder="이곳에 내용을 입력하세요."/>
             </Grid>
           </Grid>
 
           <Grid height="auto" is_container style={{position: 'fixed', bottom: 0, left: 0, right: 0}}>
-            <Button _onClick={handleClickWriteBtn} bold size="15px" height="40px" style={{borderRadius: 0}} width="100%" margin="0 auto">작성하기</Button>
+            <Button disabled={isLoading} _onClick={handleClickWriteBtn} bold size="15px" height="40px" style={{borderRadius: 0}} width="100%" margin="0 auto">
+              { isLoading ? <PulseLoader color="#fff" size="5px"/> : '작성하기' }  
+            
+            </Button>
           </Grid>
 
         </Grid>
       </WriteArea>
-    </Permit>
   )
 }
 
