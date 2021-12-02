@@ -9,6 +9,7 @@ const SET_LOADING = "SET_LOADING"
 
 const initialState = {
   list: [],
+  paging: { start: null, next: null, step: 3 },
   is_loading: false
 }
 
@@ -26,21 +27,40 @@ const initialPost = {
 }
 
 // action creator
-const setPost = createAction(SET_POST, (post_list) => ({post_list}))
+const setPost = createAction(SET_POST, (post_list, paging) => ({post_list, paging}))
 const addPost = createAction(ADD_POST, (post) => ({post}))
 const setLoading = createAction(SET_LOADING, (is_loading) => ({is_loading}))
 
 // middlewares
-const getPostFB = () => {
+const getPostFB = (start=null, step=3 ) => {
   return (dispatch, getState) => {
+
+    const _paging = getState().post.paging
+    if (_paging.start && !_paging.next) {
+      return
+    }
+
+    dispatch(setLoading(true))
     const postDB = firestore.collection('post')
 
-    // 20개씩 최신순으로 정렬
-    const query = postDB.orderBy('insert_dt', 'desc').limit(20)
+    // 최신순으로 정렬
+    let query = postDB.orderBy('insert_dt', 'desc')
+
+    if (start) {
+      query = query.startAt(start) 
+    }
 
     query
-      .get().then((docs) => {
+      .limit(step + 1)
+      .get()
+      .then((docs) => {
         const post_list = []
+        const paging = {
+          start: docs.docs[0],
+          next: docs.docs.length === step + 1 ? docs.docs[docs.docs.length - 1] : null,
+          step: step
+        }
+
         docs.forEach(doc => {
           const { user_info,
                   file, 
@@ -69,7 +89,9 @@ const getPostFB = () => {
           post_list.push(post)
         })
 
-        dispatch(setPost(post_list))
+        post_list.pop()
+
+        dispatch(setPost(post_list, paging))
       })
   }
 }
@@ -116,12 +138,14 @@ const addPostFB = (post) => {
 // reducer
 export default handleActions({
   [SET_POST]: (state, action) => produce(state, (draft) => {
-    draft.list = action.payload.post_list
+    draft.list.push(...action.payload.post_list)
+    draft.paging = action.payload.paging
+    draft.is_loading = false
   }),
 
   [ADD_POST]: (state, action) => produce(state, (draft) => {
-    draft.is_loading = false
     draft.list.unshift(action.payload.post)
+    draft.is_loading = false
   }),
 
   [SET_LOADING]: (state, action) => produce(state, (draft) => {

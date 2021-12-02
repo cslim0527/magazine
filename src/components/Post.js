@@ -6,9 +6,10 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import PopHeart from "../shared/PopHeart";
 import { Grid, Text, Img, Button } from "../elements"
+import { history } from '../redux/configureStore'
 
 const Post = (props) => {
-  const history = props.history
+
   const { user_info, image_url, contents, comment_cnt, layout_type, insert_dt } = props
   const [like, setLike] = useState(comment_cnt)
   const [heart, setHeart] = useState(false)
