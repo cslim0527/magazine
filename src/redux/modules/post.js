@@ -36,13 +36,12 @@ const getPostFB = () => {
     const postDB = firestore.collection('post')
 
     // 20개씩 최신순으로 정렬
-    const query = postDB.orderBy('insert_dt', 'desc').limit(4)
+    const query = postDB.orderBy('insert_dt', 'desc').limit(20)
 
     query
       .get().then((docs) => {
         const post_list = []
         docs.forEach(doc => {
-          console.log('포스트 정보: ', doc.data())
           const { user_info,
                   file, 
                   image_url, 
@@ -107,6 +106,7 @@ const addPostFB = (post) => {
         history.replace('/')
       })
       .catch(error => {
+        dispatch(setLoading(false))
         alert('[작성 오류] 게시물에 작성이 실패하였습니다.')
         console.log('[작성 오류]', error)
       })
@@ -120,13 +120,12 @@ export default handleActions({
   }),
 
   [ADD_POST]: (state, action) => produce(state, (draft) => {
-    console.log('포스트 추가 시 로딩 상태: ', state)
     draft.is_loading = false
     draft.list.unshift(action.payload.post)
   }),
 
   [SET_LOADING]: (state, action) => produce(state, (draft) => {
-    draft.is_loading = action.payload.is_loading = true
+    draft.is_loading = action.payload.is_loading
   })
 }, initialState)
 

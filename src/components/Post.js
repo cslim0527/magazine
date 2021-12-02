@@ -6,13 +6,18 @@ import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
 import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
 import PopHeart from "../shared/PopHeart";
 import { Grid, Text, Img, Button } from "../elements"
-import Permit from "../shared/Permit";
 
 const Post = (props) => {
   const history = props.history
-  const { user_info, image_url, contents, comment_cnt, insert_dt } = props
+  const { user_info, image_url, contents, comment_cnt, layout_type, insert_dt } = props
   const [like, setLike] = useState(comment_cnt)
   const [heart, setHeart] = useState(false)
+
+  const getLayoutType = Object.keys(layout_type).filter(key => {
+        if (layout_type[key]) {
+          return key
+        }
+      })[0]
 
   const handleClickHeartBtn = () => {
     if (heart) {
@@ -26,6 +31,46 @@ const Post = (props) => {
 
   const handleClickDetailBtn = () => {
     history.push('/detail')
+  }
+
+  let postInnerCont = ''
+  if (getLayoutType === 'left') {
+    postInnerCont = (
+      <Grid is_flex>
+        <Grid padding="16px">
+          { contents }
+        </Grid>
+
+        <Grid style={{order: '-1'}}>
+          { image_url && <Img shape="rect" content_img={ image_url }/>}
+        </Grid>
+      </Grid>
+    )
+    
+  } else if (getLayoutType === 'right') {
+    postInnerCont = (
+      <Grid is_flex>
+        <Grid padding="16px">
+          { contents }
+        </Grid>
+
+        <Grid>
+          { image_url && <Img shape="rect" content_img={ image_url }/>}
+        </Grid>
+      </Grid>
+    )
+  } else {
+    postInnerCont = (
+      <Grid>
+        <Grid padding="16px">
+          { contents }
+        </Grid>
+
+        <Grid>
+          { image_url && <Img shape="rect" content_img={ image_url }/>}
+        </Grid>
+      </Grid>
+    )
   }
 
   return (
@@ -44,15 +89,7 @@ const Post = (props) => {
 
         </Grid>
 
-        <Grid>
-          <Grid padding="16px">
-            { contents }
-          </Grid>
-
-          <Grid>
-            { image_url && <Img shape="rect" content_img={ image_url }/>}
-          </Grid>
-        </Grid>
+        { postInnerCont }
 
         <Grid is_flex padding="16px">
           <Text bold>좋아요 {like}개</Text>

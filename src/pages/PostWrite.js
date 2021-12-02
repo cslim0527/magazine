@@ -15,7 +15,6 @@ const PostWrite = (props) => {
   const taRef = useRef(null) 
   const userEmail = useSelector(state => state.user.user?.user_email)
   const isLoading = useSelector(state => state.post.is_loading)
-  console.log('로딩이냐!!!!!!!!', isLoading)
 
   const initailLayoutVal = {top: true, right: false, left: false}
   const initialimageDetail = {name: '비어있음', size: '0', u_name: null, url: null }
@@ -35,7 +34,11 @@ const PostWrite = (props) => {
   }
 
   const handleChangeLayout = (e) => {
-    setLayoutVal(e.target.value)
+    const reset = {top: false, right: false, left: false}
+    setLayoutVal({
+      ...reset,
+      [e.target.value]: true
+    })
   }
 
   const handleChangeFile = (e) => {
