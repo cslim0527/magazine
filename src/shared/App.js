@@ -11,7 +11,7 @@ import Header from '../components/Header'
 import PostList from '../pages/PostList'
 import Login from '../pages/Login'
 import SignUp from '../pages/SignUp'
-import PostWrite from '../pages/PostWrite'
+import PostEditor from '../pages/PostEditor'
 import PostDetail from '../pages/PostDetail'
 
 function App() {
@@ -38,7 +38,8 @@ function App() {
       <Route path="/" exact component={PostList} />
       <Route path="/login" exact component={Login} />
       <Route path="/signup" exact component={SignUp} />
-      <Route path="/postwrite" exact component={PostWrite} />
+      <Route path="/editor/:id" exact component={PostEditor} />
+      <Route path="/editor" exact component={PostEditor} />
       <Route path="/post/:id" exact component={PostDetail} />
     </React.Fragment>
   );

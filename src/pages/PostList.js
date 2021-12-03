@@ -25,7 +25,7 @@ const PostList = (props) => {
   }, [])
 
   const handleMoveWriteBtn = () => {
-    history.push('/postwrite')
+    history.push('/editor')
   }
 
   const handleAddPage = () => {

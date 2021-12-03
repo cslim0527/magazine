@@ -1,11 +1,12 @@
 import { createAction, handleActions } from 'redux-actions'
 import { produce } from 'immer'
-import { firestore } from '../../shared/firebase'
+import { firestore, storage } from '../../shared/firebase'
 import moment from 'moment'
 
 const SET_POST = "SET_POST"
 const EDIT_POST = "EDIT_POST"
 const ADD_POST = "ADD_POST"
+const DELETE_POST = "DELETE_POST"
 const SET_LOADING = "SET_LOADING"
 
 const initialState = {
@@ -30,8 +31,58 @@ const initialPost = {
 // action creator
 const setPost = createAction(SET_POST, (post_list, paging) => ({post_list, paging}))
 const addPost = createAction(ADD_POST, (post) => ({post}))
+const deletePost = createAction(DELETE_POST, (post) => ({post}))
 const editPost = createAction(EDIT_POST, (post_id, post) => ({post_id, post}))
 const setLoading = createAction(SET_LOADING, (is_loading) => ({is_loading}))
+
+
+const editPostFB = (post_id=null, post ={}) => {
+  return (dispatch, getState, { history }) => {
+
+    if (!post_id) {
+      return
+    }
+
+    const _post = getState().post.list.filter(p => p.id === post_id)[0]
+    const before_image = _post.file.uid
+    const now_image = post.u_name
+
+    // 이미지가 있으면서 이미지를 변경했을때 기존 storage 삭제
+    if (before_image !== now_image) {
+      const _remove = storage.ref().child(`images/${before_image}`)
+      _remove.delete().then(function() {
+        // File deleted successfully
+      }).catch(function(error) {
+        // Uh-oh, an error occurred!
+        console.log('[삭제 오류]', error)
+      });
+    }
+
+    // 데이터 업데이트
+    const new_post = {
+      ..._post,
+      contents: post.contents,
+      image_url: post.url,
+      layout_type: post.layoutVal,
+      file: {
+        name: post.name,
+        size: post.size,
+        uid: post.u_name,
+      },
+    }
+
+    const postDB = firestore.collection('post')
+    postDB.doc(post_id).update(new_post).then(doc => {
+      dispatch(editPost(post_id, new_post))
+      history.replace('/')
+    })
+
+    if (post.file) {
+      storage.ref(`images/${post.u_name}`).put(post.file)
+    }
+
+  }
+}
 
 // middlewares
 const getPostFB = (start=null, step=3 ) => {
@@ -99,6 +150,7 @@ const getPostFB = (start=null, step=3 ) => {
 }
 
 const addPostFB = (post) => {
+  console.log('addpost', post)
   return (dispatch, getState, {history}) => {
 
     const _post = {
@@ -134,6 +186,9 @@ const addPostFB = (post) => {
         alert('[작성 오류] 게시물에 작성이 실패하였습니다.')
         console.log('[작성 오류]', error)
       })
+
+    storage.ref(`images/${post.u_name}`).put(post.file)
+    
   }
 }
 
@@ -178,13 +233,17 @@ export default handleActions({
     draft.is_loading = false
   }),
 
+  [DELETE_POST]: (state, action) => produce(state, (draft) => {
+  }),
+
   [EDIT_POST]: (state, action) => produce(state, (draft) => {
-    console.log('[EDIT_POST]', action)
     const idx = draft.list.findIndex(post => post.id === action.payload.post_id)
     draft.list[idx] = {
       ...state.list[idx],
       ...action.payload.post
     }
+    
+    draft.is_loading = false
   }),
 
   [SET_LOADING]: (state, action) => produce(state, (draft) => {
@@ -199,7 +258,8 @@ const actionCreators = {
   setLoading,
   getPostFB,
   addPostFB,
-  getOnePostFB
+  getOnePostFB,
+  editPostFB
 }
 
 export { actionCreators }

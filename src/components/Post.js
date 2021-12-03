@@ -34,6 +34,15 @@ const Post = (props) => {
     history.push(`/post/${props.id}`)
   }
 
+  const handleEditPost = () => {
+    console.log('수정!')
+    history.push(`/editor/${props.id}`)
+  }
+
+  const handleDeletePost = () => {
+    console.log('삭제!')
+  }
+
   let postInnerCont = ''
   if (getLayoutType === 'left') {
     postInnerCont = (
@@ -86,7 +95,8 @@ const Post = (props) => {
 
           <Grid is_flex>
             <Text color="#8e8e8e" size="12px" margin="0 0 0 auto">{insert_dt}</Text>
-            { isMe && <Button size="12px" ver="white">편집</Button> }
+            { !paramId && isMe && <Button _onClick={handleEditPost} size="12px" ver="white">편집</Button> }
+            { paramId && isMe && <Button _onClick={handleDeletePost} size="12px" ver="white">삭제</Button> }
           </Grid>
 
         </Grid>

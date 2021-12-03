@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
 import { storage } from '../shared/firebase'
@@ -15,19 +15,31 @@ const PostWrite = (props) => {
   const taRef = useRef(null) 
   const userEmail = useSelector(state => state.user.user?.user_email)
   const isLoading = useSelector(state => state.post.is_loading)
+  const post_list = useSelector(state => state.post.list)
+  const post_id = props.match.params.id
+  const is_edit = post_id ? true : false 
+  const _post = is_edit ? post_list.find(post => post.id === post_id) : null
 
-  const initailLayoutVal = {top: true, right: false, left: false}
-  const initialimageDetail = {name: '비어있음', size: '0', u_name: null, url: null }
-  const [contents, setContents] = useState('')
+  const initailLayoutVal = _post ? _post.layout_type : {top: true, right: false, left: false}
+  const initialimageDetail = _post ? {name: _post.file.name, size: _post.file.size, u_name: _post.file.uid, url: _post.image_url } : {name: '비어있음', size: '0', u_name: null, url: null }
+  const [contents, setContents] = useState(_post ? _post.contents : '')
   const [layoutVal, setLayoutVal] = useState(initailLayoutVal)
   const [imageDetail, setImageDetail] = useState(initialimageDetail)
   const [isUploading, setIsUploading] = useState(false) // uploading 상태
-
+  
   const byteCalc = (x) => {
     var s = ['bytes', 'kB', 'MB', 'GB', 'TB', 'PB'];
     var e = Math.floor(Math.log(x) / Math.log(1024));
     return (x / Math.pow(1024, e)).toFixed(2) + " " + s[e];
   }
+
+  useEffect(() => {
+    // if (is_edit && !_post) {
+    //   alert('포스팅 정보를 찾을 수 없습니다.')
+    //   history.goBack()
+    //   return
+    // }
+  }, [])
 
   const handleChangeContents = (e) => {
     setContents(e.target.value)
@@ -76,29 +88,15 @@ const PostWrite = (props) => {
 
   }
 
-  const removeFB = () => {
-    // 이미지가 비어있는 초기 상태일 경우 리턴
-    if (imageDetail.u_name === null) return
-
-    setImageDetail({name: '비어있음', size: '0', u_name: null, url: null })
-
-    // const _remove = storage.ref().child(`images/${imageName}`)
-    // _remove.delete().then(function() {
-    //   // File deleted successfully
-    //   setImageDetail({name: '비어있음', size: '0', u_name: null, url: null })
-    // }).catch(function(error) {
-    //   // Uh-oh, an error occurred!
-    //   alert('[오류] 이미지 정보를 처리 할 수 없습니다. \n 다시 시도해 주세요.')
-    //   console.log('[삭제 오류]', error)
-    // });
-  }
-
   const uploadFB = () => {
     storage.ref(`images/${imageDetail.u_name}`).put(imageDetail.file)
   }
   
   const handleClickCancelUpload = () => {
-    removeFB()
+    // 이미지가 비어있는 초기 상태일 경우 리턴
+    if (imageDetail.u_name === null) return
+
+    setImageDetail({name: '비어있음', size: '0', u_name: null, url: null })
   }
 
   const handleClickWriteBtn = () => {
@@ -108,13 +106,27 @@ const PostWrite = (props) => {
       return
     }
 
-    if (imageDetail.file) {
-      uploadFB()
-    }
+    // if (imageDetail.file) {
+    //   uploadFB()
+    // }
 
-    console.log('넘어갈 데이터',{layoutVal, contents, ...imageDetail})
     dispatch(postActions.setLoading(true))
     dispatch(postActions.addPostFB({layoutVal, contents, ...imageDetail}))
+  }
+
+  const handleClickEditBtn = () => {
+    if (contents === '') {
+      alert('내용을 입력해주세요.')
+      taRef.current.focus()
+      return
+    }
+
+    // if (imageDetail.file) {
+    //   uploadFB()
+    // }
+
+    dispatch(postActions.setLoading(true))
+    dispatch(postActions.editPostFB(post_id, {layoutVal, contents, ...imageDetail}))
   }
 
   return (
@@ -186,15 +198,22 @@ const PostWrite = (props) => {
           <Grid bg="white" margin="0 0 10px 0" border="border: 1px solid var(--border-color)" padding="16px">
             <Text bold size="15px" margin="0 0 20px 0">· 내용</Text>
             <Grid>
-              <Textarea ref={taRef} _onChange={handleChangeContents} border="0" padding="0 8px" height="170px" placeholder="이곳에 내용을 입력하세요."/>
+              <Textarea value={contents} ref={taRef} _onChange={handleChangeContents} border="0" padding="0 8px" height="170px" placeholder="이곳에 내용을 입력하세요."/>
             </Grid>
           </Grid>
 
           <Grid height="auto" is_container style={{position: 'fixed', bottom: 0, left: 0, right: 0}}>
-            <Button disabled={isLoading} _onClick={handleClickWriteBtn} bold size="15px" height="40px" style={{borderRadius: 0}} width="100%" margin="0 auto">
-              { isLoading ? <PulseLoader color="#fff" size="5px"/> : '작성하기' }  
-            
-            </Button>
+            {
+              is_edit 
+              ?
+                <Button disabled={isLoading} _onClick={handleClickEditBtn} bold size="15px" height="40px" style={{borderRadius: 0}} width="100%" margin="0 auto">
+                { isLoading ? <PulseLoader color="#fff" size="5px"/> : '수정하기' }  
+                </Button>
+              :
+                <Button disabled={isLoading} _onClick={handleClickWriteBtn} bold size="15px" height="40px" style={{borderRadius: 0}} width="100%" margin="0 auto">
+                  { isLoading ? <PulseLoader color="#fff" size="5px"/> : '작성하기' }  
+                </Button>
+            }
           </Grid>
 
         </Grid>
