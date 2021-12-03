@@ -2,7 +2,7 @@ import React, { forwardRef } from 'react'
 import styled from 'styled-components'
 
 const Textarea = forwardRef((props, ref) => {
-  const { style, _onChange, maxh, border, placeholder, padding, size, resize, width, height } = props
+  const { _onChange, maxh, border, placeholder, padding, size, resize, width, height, value, _onKeyUp } = props
   const styles = {
     border,
     placeholder,
@@ -12,7 +12,9 @@ const Textarea = forwardRef((props, ref) => {
     width,
     height,
     maxh,
+    value,
     onChange: _onChange,
+    onKeyUp: _onKeyUp
   }
 
   return (
@@ -39,6 +41,10 @@ const TaBox = styled.textarea`
   width: ${({width}) => width };
   height: ${({height}) => height };
   max-height: ${({maxh}) => maxh };
+
+  ::placeholder {
+    color: #ccc;
+  }
 
   border-radius: 4px;
 

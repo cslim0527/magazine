@@ -1,5 +1,5 @@
 import React, { useState } from "react"
-import styled  from 'styled-components'
+import { useParams } from "react-router";
 
 import FavoriteIcon from '@material-ui/icons/Favorite';
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
@@ -9,12 +9,12 @@ import { Grid, Text, Img, Button } from "../elements"
 import { history } from '../redux/configureStore'
 
 const Post = (props) => {
-
-  const { user_info, image_url, contents, comment_cnt, layout_type, insert_dt } = props
-  const [like, setLike] = useState(comment_cnt)
+  const { user_info, image_url, contents, comment_cnt, layout_type, like_cnt, insert_dt, isMe, is_detail } = props
+  const [like, setLike] = useState(like_cnt)
   const [heart, setHeart] = useState(false)
+  const paramId = useParams().id
 
-  const getLayoutType = Object.keys(layout_type).filter(key => {
+  const getLayoutType = layout_type && Object.keys(layout_type).filter(key => {
         if (layout_type[key]) {
           return key
         }
@@ -31,34 +31,35 @@ const Post = (props) => {
   }
 
   const handleClickDetailBtn = () => {
-    history.push('/detail')
+    history.push(`/post/${props.id}`)
   }
 
   let postInnerCont = ''
   if (getLayoutType === 'left') {
     postInnerCont = (
       <Grid is_flex>
-        <Grid padding="16px">
-          { contents }
-        </Grid>
-
-        <Grid style={{order: '-1'}}>
-          { image_url && <Img shape="rect" content_img={ image_url }/>}
-        </Grid>
+      <Grid padding="16px">
+        { contents }
       </Grid>
+
+      <Grid>
+        { image_url && <Img _onClick={!is_detail ? handleClickDetailBtn : null} shape="rect" content_img={ image_url }/>}
+      </Grid>
+    </Grid>
+
     )
     
   } else if (getLayoutType === 'right') {
     postInnerCont = (
       <Grid is_flex>
-        <Grid padding="16px">
-          { contents }
-        </Grid>
-
-        <Grid>
-          { image_url && <Img shape="rect" content_img={ image_url }/>}
-        </Grid>
+      <Grid padding="16px">
+        { contents }
       </Grid>
+
+      <Grid style={{order: '-1'}}>
+        { image_url && <Img _onClick={!is_detail ? handleClickDetailBtn : null} shape="rect" content_img={ image_url }/>}
+      </Grid>
+    </Grid>
     )
   } else {
     postInnerCont = (
@@ -68,14 +69,14 @@ const Post = (props) => {
         </Grid>
 
         <Grid>
-          { image_url && <Img shape="rect" content_img={ image_url }/>}
+          { image_url && <Img _onClick={!is_detail ? handleClickDetailBtn : null} shape="rect" content_img={ image_url }/>}
         </Grid>
       </Grid>
     )
   }
 
   return (
-      <Grid margin="20px 0" bg="#fff" border="border: 1px solid var(--border-color)" round>
+      <Grid margin={!is_detail && "20px 0"} bg="#fff" border={!is_detail && "border: 1px solid var(--border-color)"} round>
         <Grid is_flex padding="16px">
 
           <Grid is_flex>
@@ -84,8 +85,8 @@ const Post = (props) => {
           </Grid>
 
           <Grid is_flex>
-            <Text color="#8e8e8e" size="12px" margin="0 0 0 auto">6시간 전</Text>
-            <Button size="12px" ver="white">편집</Button>
+            <Text color="#8e8e8e" size="12px" margin="0 0 0 auto">{insert_dt}</Text>
+            { isMe && <Button size="12px" ver="white">편집</Button> }
           </Grid>
 
         </Grid>
@@ -93,11 +94,21 @@ const Post = (props) => {
         { postInnerCont }
 
         <Grid is_flex padding="16px">
-          <Text bold>좋아요 {like}개</Text>
 
-          <Button _onClick={handleClickDetailBtn} style={{position: 'relative', top: '1x'}}size="11px" ver='heart-off' margin="0 0 0 auto">
-            <ChatBubbleOutlineIcon/>
-          </Button>
+        {
+          paramId ? <Text bold>댓글 {comment_cnt}개</Text> : <Text bold>좋아요 {like}개</Text>
+        }
+          
+
+        {
+          !paramId && 
+          (
+            <Button _onClick={handleClickDetailBtn} style={{position: 'relative', top: '1x'}}size="11px" ver='heart-off' margin="0 0 0 auto">
+              <ChatBubbleOutlineIcon/>
+            </Button>
+          )
+        }
+          
           <Button _onClick={handleClickHeartBtn} size="12px" ver={heart ? 'heart-on': 'heart-off'}>
             {heart ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
           </Button>
@@ -111,13 +122,14 @@ const Post = (props) => {
 
 Post.defaultProps = {
   user_info: {
-    user_name: 'chansoo',
+    user_name: '',
     user_profile: 'https://toppng.com/uploads/preview/instagram-default-profile-picture-11562973083brycehrmyv.png',
   },
-  image_url: 'https://cloudfront-ap-northeast-1.images.arcpublishing.com/chosun/OIGMK3BVRNBYNKWMUKJMFXBDG4.jpg',
-  contents: '고양이네요!',
-  comment_cnt: 10,
-  insert_dt: '2021-02-27 10:00:00'
+  image_url: 'https://socialistmodernism.com/wp-content/uploads/2017/07/placeholder-image.png',
+  contents: '',
+  comment_cnt: 0,
+  insert_dt: '',
+  like_cnt: 0
 }
 
 export default Post 

@@ -1,6 +1,5 @@
 import styled from 'styled-components'
 import { useState, useEffect } from 'react'
-import { getCookie, setCookie, deleteCookie } from '../shared/Cookie'
 import { useDispatch, useSelector } from 'react-redux'
 import { actionCreators as userActions } from '../redux/modules/user'
 

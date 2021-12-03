@@ -1,6 +1,5 @@
 import { useState, useEffect } from 'react'
 import styled from 'styled-components'
-import { useHistory } from 'react-router-dom'
 import { Grid, Input, Button, Text } from "../elements"
 import { useDispatch } from 'react-redux'
 import { actionCreators as userActions } from '../redux/modules/user'

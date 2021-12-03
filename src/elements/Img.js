@@ -2,10 +2,11 @@ import React from "react"
 import styled from 'styled-components'
 
 const Img = (props) => {
-  const { shape, content_img, width, height, margin, user_profile } = props
+  const { shape, content_img, width, height, margin, user_profile, _onClick } = props
   const rectStyles = {
     margin,
-    content_img
+    content_img,
+    onClick: _onClick
   }
 
   const circleStyles = {

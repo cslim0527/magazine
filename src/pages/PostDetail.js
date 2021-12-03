@@ -1,64 +1,39 @@
-import React, { useState } from "react"
-import styled  from 'styled-components'
+import React, { useState, useEffect } from "react"
+import { useParams } from "react-router"
+import { useDispatch, useSelector } from "react-redux"
+import { actionCreators as postActions } from "../redux/modules/post"
 
-import { Grid, Text, Img, Button, Input, Textarea } from "../elements"
+import { Grid } from "../elements"
+import Post from "../components/Post"
+import CommentWrite from "../components/CommentWrite"
+import CommentList from "../components/CommentList"
 
 const PostDetail = (props) => {
-  const history = props.history
-  const { user_info, image_url, contents, comment_cnt, insert_dt } = props
+  const paramId = useParams().id
+  const dispatch = useDispatch()
+
+  const myId = useSelector(state => state.user.user)?.uid
+  const postList = useSelector(state => state.post.list)
+  const postIdx = postList.findIndex(post => post.id === paramId)
+  const postData = postList[postIdx]
+  
+  const isMine = myId === postData?.user_info.uid
+
+  // FIXME  새로고침 후 뒤로가기 했을때 데이터 배열 순서 바뀌는 것 해결하기
+  useEffect(() => {
+    if (postData) {
+      return
+    }
+
+    dispatch(postActions.getOnePostFB(paramId))
+  }, [])
 
   return (
       <Grid is_container margin="25px auto 0 auto" bg="#fff" border="border: 1px solid var(--border-color)" round>
-        <Grid is_flex padding="16px">
+        <Post {...postData} is_detail isMe={isMine} />
 
-          <Grid is_flex>
-            <Img shape="circle" margin="0 10px 0 0" user_profile={ user_info.user_profile }/>
-            <Text bold margin="0 auto 0 0">게시자 닉네임</Text>
-          </Grid>
-
-          <Grid is_flex>
-            <Text color="#8e8e8e" size="12px" margin="0 0 0 auto">6시간 전</Text>
-            <Button size="12px" ver="white">편집</Button>
-          </Grid>
-
-        </Grid>
-
-        <Grid>
-          <Grid padding="16px">
-            { contents }
-          </Grid>
-
-          <Grid>
-            { image_url && <Img shape="rect" content_img={ image_url }/>}
-          </Grid>
-        </Grid>
-
-        <Grid is_flex padding="16px">
-          <Text bold>댓글 10개</Text>
-        </Grid>
-
-        <Grid style={{borderRadius: '0'}} border="border-top: 1px solid var(--border-color)" is_flex padding="16px">
-          <Grid is_flex>
-            <Img shape="circle" margin="0 10px 0 0" user_profile={ user_info.user_profile }/>
-            <Textarea border="0" padding="0" height="18px" placeholder="댓글 작성"/>
-            <Button margin="0 0 0 10px">작성</Button>
-          </Grid>
-        </Grid>
-
-        <Grid style={{borderRadius: '0'}} border="border-top: 1px solid var(--border-color)" padding="16px">
-          <ul>
-            <li>
-              <Grid is_flex>
-                <Grid style={{flexShrink: '0'}} is_flex width="auto" margin="0 10px 0 0">
-                  <Img shape="circle" margin="0 10px 0 0" user_profile={ user_info.user_profile }/>
-                  <Text bold margin="0 auto 0 0">게시자 닉네임</Text>
-                </Grid>
-                <Text width="100%" margin="0 auto 0 0">게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임게시자 닉네임</Text>
-                <Button ver="white">삭제</Button>
-              </Grid>
-            </li> 
-          </ul>
-        </Grid>
+        <CommentWrite post_id={paramId}/>
+        <CommentList post_id={paramId}/>
       </Grid>
   )
 }

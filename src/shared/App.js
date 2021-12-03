@@ -39,7 +39,7 @@ function App() {
       <Route path="/login" exact component={Login} />
       <Route path="/signup" exact component={SignUp} />
       <Route path="/postwrite" exact component={PostWrite} />
-      <Route path="/detail" exact component={PostDetail} />
+      <Route path="/post/:id" exact component={PostDetail} />
     </React.Fragment>
   );
 }

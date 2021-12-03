@@ -4,6 +4,7 @@ import { firestore } from '../../shared/firebase'
 import moment from 'moment'
 
 const SET_POST = "SET_POST"
+const EDIT_POST = "EDIT_POST"
 const ADD_POST = "ADD_POST"
 const SET_LOADING = "SET_LOADING"
 
@@ -29,6 +30,7 @@ const initialPost = {
 // action creator
 const setPost = createAction(SET_POST, (post_list, paging) => ({post_list, paging}))
 const addPost = createAction(ADD_POST, (post) => ({post}))
+const editPost = createAction(EDIT_POST, (post_id, post) => ({post_id, post}))
 const setLoading = createAction(SET_LOADING, (is_loading) => ({is_loading}))
 
 // middlewares
@@ -89,7 +91,7 @@ const getPostFB = (start=null, step=3 ) => {
           post_list.push(post)
         })
 
-        post_list.pop()
+        // post_list.pop()
 
         dispatch(setPost(post_list, paging))
       })
@@ -135,17 +137,54 @@ const addPostFB = (post) => {
   }
 }
 
+const getOnePostFB = (id) => {
+  return (dispatch, getState) => {
+    const postDB = firestore.collection('post')
+    postDB.doc(id).get().then(doc => {
+      const post = {
+        ...doc.data(),
+        id,
+      }
+
+      dispatch(setPost([post]))
+    })
+  }
+}
+
 // reducer
 export default handleActions({
   [SET_POST]: (state, action) => produce(state, (draft) => {
+
     draft.list.push(...action.payload.post_list)
-    draft.paging = action.payload.paging
+
+    draft.list = draft.list.reduce((acc, cur) => {
+      if (acc.findIndex(item => item.id === cur.id) === -1) {
+        return [...acc, cur]
+      } else {
+        acc[acc.findIndex(item => item.id === cur.id)] = cur
+        return acc
+      }
+    }, [])
+    
+    if (action.payload.paging) {
+      draft.paging = action.payload.paging
+    }
+
     draft.is_loading = false
   }),
 
   [ADD_POST]: (state, action) => produce(state, (draft) => {
     draft.list.unshift(action.payload.post)
     draft.is_loading = false
+  }),
+
+  [EDIT_POST]: (state, action) => produce(state, (draft) => {
+    console.log('[EDIT_POST]', action)
+    const idx = draft.list.findIndex(post => post.id === action.payload.post_id)
+    draft.list[idx] = {
+      ...state.list[idx],
+      ...action.payload.post
+    }
   }),
 
   [SET_LOADING]: (state, action) => produce(state, (draft) => {
@@ -156,9 +195,11 @@ export default handleActions({
 const actionCreators = {
   setPost,
   addPost,
+  editPost,
   setLoading,
   getPostFB,
-  addPostFB
+  addPostFB,
+  getOnePostFB
 }
 
 export { actionCreators }
