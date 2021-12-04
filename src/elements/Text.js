@@ -31,6 +31,7 @@ Text.defaultProps = {
 }
 
 const TextElem = styled.div`
+  word-break: break-all;
   color: ${props => props.color ? props.color : Text.defaultProps.color};
   width: ${props => props.width ? props.width : Text.defaultProps.width};
   ${props => props.size ? `font-size: ${props.size}` : Text.defaultProps.size};

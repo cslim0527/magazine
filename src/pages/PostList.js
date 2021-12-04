@@ -4,34 +4,27 @@ import { actionCreators as postActions } from "../redux/modules/post"
 import { actionCreators as likeActions } from "../redux/modules/like"
 
 import Post from "../components/Post"
-import { Grid, Button } from "../elements"
+import { Grid, Button, Text } from "../elements"
 import AddIcon from '@material-ui/icons/Add'
 import Permit from "../shared/Permit"
 import InfinityScroll from "./InfinityScroll"
 
 const PostList = (props) => {
-  console.log('[PostList]')
   const dispatch = useDispatch()
   const history = props.history
   const myInfo = useSelector(state => state.user.user)
   const postList = useSelector(state => state.post.list)
   const paging = useSelector(state => state.post.paging)
   const likes = useSelector(state => state.like.likes)
-  console.log('좋아요정보', likes)
 
   useEffect(() => {
-
     if (postList.length < 2) {
       dispatch(postActions.getPostFB())
     }
-
-
   }, [])
 
   useEffect(() => {
-
     dispatch(likeActions.getLikeFB(myInfo?.uid))
-
   }, [myInfo])
 
   const handleMoveWriteBtn = () => {
@@ -40,6 +33,26 @@ const PostList = (props) => {
 
   const handleAddPage = () => {
     dispatch(postActions.getPostFB(paging.next))
+  }
+
+  if (postList.length === 0) {
+    return (
+      <Grid is_container margin="100px auto 0 auto">
+        <Text center>
+          게시물이 없습니다.
+          <br/><br/>
+          새로운 게시물를 작성해주세요 :)
+        </Text>
+
+        {
+          myInfo ? <Button _onClick={() => history.push('/editor')} margin="20px auto">게시물 작성</Button> : <Button _onClick={() => history.push('/login')} margin="20px auto">로그인하고 게시물 작성하기</Button>
+        }
+
+        <Permit>
+          <Button _onClick={handleMoveWriteBtn} width="50px" height="50px" circle floating="bottom: 40px; right: 20px;"><AddIcon/></Button>
+        </Permit>
+      </Grid>
+    )
   }
 
   return (

@@ -35,7 +35,6 @@ const Login = (props) => {
 
   const handleClickLoginBtn = () => {
     setLoginDisabled(true)
-    // dispatch(userActions.loginFB(userInfo))
   }
 
   const handleKeyUpLoginForm = (e) => {

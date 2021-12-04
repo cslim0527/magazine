@@ -3,7 +3,7 @@ import GlobalStyles from '../Global'
 import styled from 'styled-components'
 import { useLocation } from 'react-router'
 import { Route } from 'react-router-dom'
-import { useDispatch } from 'react-redux'
+import { useDispatch, useSelector } from 'react-redux'
 import { actionCreators as userActions } from '../redux/modules/user'
 import { apiKey } from '../shared/firebase'
 

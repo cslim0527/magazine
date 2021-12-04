@@ -1,8 +1,8 @@
-import React, { useEffect, useState } from "react"
+import React, { useState } from "react"
 import { useParams } from "react-router"
 import { history } from '../redux/configureStore'
 import { useDispatch, useSelector } from "react-redux"
-import post, { actionCreators as postActions } from "../redux/modules/post"
+import { actionCreators as postActions } from "../redux/modules/post"
 
 import FavoriteIcon from '@material-ui/icons/Favorite'
 import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
@@ -59,7 +59,9 @@ const Post = (props) => {
     postInnerCont = (
       <Grid is_flex>
       <Grid padding="16px">
-        { contents }
+        <Text>
+          { contents }
+        </Text>
       </Grid>
 
       <Grid>
@@ -73,7 +75,9 @@ const Post = (props) => {
     postInnerCont = (
       <Grid is_flex>
       <Grid padding="16px">
-        { contents }
+        <Text>
+          { contents }
+        </Text>
       </Grid>
 
       <Grid style={{order: '-1'}}>
@@ -85,7 +89,9 @@ const Post = (props) => {
     postInnerCont = (
       <Grid>
         <Grid padding="16px">
-          { contents }
+          <Text>
+            { contents }
+          </Text>
         </Grid>
 
         <Grid>

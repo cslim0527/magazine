@@ -1,7 +1,6 @@
-import { useState, useRef, useEffect } from 'react'
+import { useState, useRef } from 'react'
 import styled from 'styled-components'
 import { useDispatch, useSelector } from 'react-redux'
-import { storage } from '../shared/firebase'
 import { actionCreators as postActions } from '../redux/modules/post'
 
 import ImgUploader from "../components/ImgUploader"
@@ -10,7 +9,6 @@ import Textarea from '../elements/Textarea'
 import PulseLoader from "react-spinners/PulseLoader";
 
 const PostWrite = (props) => {
-  const history = props.history
   const dispatch = useDispatch()
   const taRef = useRef(null) 
   const userEmail = useSelector(state => state.user.user?.user_email)
@@ -32,14 +30,6 @@ const PostWrite = (props) => {
     var e = Math.floor(Math.log(x) / Math.log(1024));
     return (x / Math.pow(1024, e)).toFixed(2) + " " + s[e];
   }
-
-  useEffect(() => {
-    // if (is_edit && !_post) {
-    //   alert('포스팅 정보를 찾을 수 없습니다.')
-    //   history.goBack()
-    //   return
-    // }
-  }, [])
 
   const handleChangeContents = (e) => {
     setContents(e.target.value)
@@ -88,10 +78,6 @@ const PostWrite = (props) => {
 
   }
 
-  const uploadFB = () => {
-    storage.ref(`images/${imageDetail.u_name}`).put(imageDetail.file)
-  }
-  
   const handleClickCancelUpload = () => {
     // 이미지가 비어있는 초기 상태일 경우 리턴
     if (imageDetail.u_name === null) return
@@ -106,10 +92,6 @@ const PostWrite = (props) => {
       return
     }
 
-    // if (imageDetail.file) {
-    //   uploadFB()
-    // }
-
     dispatch(postActions.setLoading(true))
     dispatch(postActions.addPostFB({layoutVal, contents, ...imageDetail}))
   }
@@ -120,10 +102,6 @@ const PostWrite = (props) => {
       taRef.current.focus()
       return
     }
-
-    // if (imageDetail.file) {
-    //   uploadFB()
-    // }
 
     dispatch(postActions.setLoading(true))
     dispatch(postActions.editPostFB(post_id, {layoutVal, contents, ...imageDetail}))

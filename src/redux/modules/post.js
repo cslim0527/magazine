@@ -163,6 +163,7 @@ const getPostFB = (start=null, step=3 ) => {
       .limit(step + 1)
       .get()
       .then((docs) => {
+        console.log('무한스크롤', docs.docs)
         const post_list = []
         const paging = {
           start: docs.docs[0],
@@ -198,7 +199,9 @@ const getPostFB = (start=null, step=3 ) => {
           post_list.push(post)
         })
 
-        // post_list.pop()
+        if (docs.docs.length === step + 1) {
+          post_list.pop()
+        }
 
         dispatch(setPost(post_list, paging))
       })
@@ -222,7 +225,7 @@ const addPostFB = (post) => {
         name: post.name,
         size: post.size
       },
-      insert_dt: moment().format('YYYY-MM-DD hh:mm:ss')
+      insert_dt: moment().format('YYYY-MM-DD HH:mm:ss')
     }
 
     const postDB = firestore.collection('post')
@@ -255,7 +258,6 @@ const getOnePostFB = (id) => {
       .doc(id)
       .get()
       .then(doc => {
-        console.log(doc.data())
         if (!doc.data()) {
           dispatch(setEscape(true))
         } else {
@@ -273,8 +275,6 @@ const getOnePostFB = (id) => {
 // reducer
 export default handleActions({
   [SET_POST]: (state, action) => produce(state, (draft) => {
-
-    console.log('[SET_POST]', '1)', draft.list, '2)', action.payload.post_list)
     draft.list.push(...action.payload.post_list)
 
     draft.list = draft.list.reduce((acc, cur) => {
@@ -285,7 +285,7 @@ export default handleActions({
         return acc
       }
     }, [])
-    
+
     if (action.payload.paging) {
       draft.paging = action.payload.paging
     }

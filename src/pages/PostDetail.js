@@ -21,10 +21,6 @@ const PostDetail = (props) => {
   const isMine = myId === postData?.user_info?.uid
 
   const escape = useSelector(state => state.post.escape)
-  // console.log('탈출 시그널', escape)
-
-  console.log('탈출 시그널', postData)
-
 
   // FIXME  새로고침 후 뒤로가기 했을때 데이터 배열 순서 바뀌는 것 해결하기
   useEffect(() => {
