@@ -22,7 +22,6 @@ const getLikeFB = (user_id) => {
     if (!user_id) {
       return
     }
-    console.log('[getLikeFB]', user_id)
 
     const likeDB = collection(db, 'like')
     const likeQuery = query(likeDB, where('user_id', '==', user_id))

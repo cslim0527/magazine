@@ -15,7 +15,7 @@ const Post = (props) => {
   const { like_on, user_info, image_url, contents, comment_cnt, layout_type, like_cnt, insert_dt, isMe, is_detail } = props
   const dispatch = useDispatch()
   const [like, setLike] = useState(like_cnt)
-  const [heart, setHeart] = useState(like_on)
+  const [heart, setHeart] = useState(false)
   const paramId = useParams().id
   const post_data = useSelector(state => state.post.list)[0]
 

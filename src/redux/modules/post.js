@@ -163,7 +163,6 @@ const getPostFB = (start=null, step=3 ) => {
       .limit(step + 1)
       .get()
       .then((docs) => {
-        console.log('무한스크롤', docs.docs)
         const post_list = []
         const paging = {
           start: docs.docs[0],

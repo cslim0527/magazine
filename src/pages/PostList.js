@@ -17,6 +17,8 @@ const PostList = (props) => {
   const paging = useSelector(state => state.post.paging)
   const likes = useSelector(state => state.like.likes)
 
+  console.log('라이크', likes)
+
   useEffect(() => {
     if (postList.length < 2) {
       dispatch(postActions.getPostFB())
