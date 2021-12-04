@@ -40,7 +40,7 @@ Img.defaultProps = {
 
 const RatioBox = styled.div`
   position: relative;
-  padding-bottom: 75%;
+  padding-bottom: 85%;
   background-image: url("${props => props.content_img}");
   background-size: auto 100%;
   background-position: center;

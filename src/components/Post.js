@@ -1,18 +1,23 @@
-import React, { useState } from "react"
-import { useParams } from "react-router";
-
-import FavoriteIcon from '@material-ui/icons/Favorite';
-import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder';
-import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline';
-import PopHeart from "../shared/PopHeart";
-import { Grid, Text, Img, Button } from "../elements"
+import React, { useEffect, useState } from "react"
+import { useParams } from "react-router"
 import { history } from '../redux/configureStore'
+import { useDispatch, useSelector } from "react-redux"
+import post, { actionCreators as postActions } from "../redux/modules/post"
+
+import FavoriteIcon from '@material-ui/icons/Favorite'
+import FavoriteBorderIcon from '@material-ui/icons/FavoriteBorder'
+import ChatBubbleOutlineIcon from '@material-ui/icons/ChatBubbleOutline'
+import PopHeart from "../shared/PopHeart"
+import { Grid, Text, Img, Button } from "../elements"
+import Permit from '../shared/Permit'
 
 const Post = (props) => {
-  const { user_info, image_url, contents, comment_cnt, layout_type, like_cnt, insert_dt, isMe, is_detail } = props
+  const { like_on, user_info, image_url, contents, comment_cnt, layout_type, like_cnt, insert_dt, isMe, is_detail } = props
+  const dispatch = useDispatch()
   const [like, setLike] = useState(like_cnt)
-  const [heart, setHeart] = useState(false)
+  const [heart, setHeart] = useState(like_on)
   const paramId = useParams().id
+  const post_data = useSelector(state => state.post.list)[0]
 
   const getLayoutType = layout_type && Object.keys(layout_type).filter(key => {
         if (layout_type[key]) {
@@ -35,12 +40,18 @@ const Post = (props) => {
   }
 
   const handleEditPost = () => {
-    console.log('수정!')
     history.push(`/editor/${props.id}`)
   }
 
   const handleDeletePost = () => {
-    console.log('삭제!')
+    const delete_post = {
+      post_id: paramId,
+      comment_cnt: post_data.comment_cnt,
+      image_id: post_data.file.uid
+    }
+
+    // post_id/ 이미지 id/ 댓글 정보
+    dispatch(postActions.deletePostFB(delete_post))
   }
 
   let postInnerCont = ''
@@ -119,9 +130,11 @@ const Post = (props) => {
           )
         }
           
-          <Button _onClick={handleClickHeartBtn} size="12px" ver={heart ? 'heart-on': 'heart-off'}>
-            {heart ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
-          </Button>
+          <Permit>
+            <Button _onClick={handleClickHeartBtn} size="12px" ver={heart ? 'heart-on': 'heart-off'}>
+              {heart ? <FavoriteIcon/> : <FavoriteBorderIcon/>}
+            </Button>
+          </Permit>
         </Grid>
 
         { heart && <PopHeart play={heart}/> }

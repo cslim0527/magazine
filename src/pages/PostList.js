@@ -1,6 +1,7 @@
 import React, { useEffect } from "react"
 import { useDispatch, useSelector } from "react-redux"
 import { actionCreators as postActions } from "../redux/modules/post"
+import { actionCreators as likeActions } from "../redux/modules/like"
 
 import Post from "../components/Post"
 import { Grid, Button } from "../elements"
@@ -15,6 +16,8 @@ const PostList = (props) => {
   const myInfo = useSelector(state => state.user.user)
   const postList = useSelector(state => state.post.list)
   const paging = useSelector(state => state.post.paging)
+  const likes = useSelector(state => state.like.likes)
+  console.log('좋아요정보', likes)
 
   useEffect(() => {
 
@@ -22,7 +25,14 @@ const PostList = (props) => {
       dispatch(postActions.getPostFB())
     }
 
+
   }, [])
+
+  useEffect(() => {
+
+    dispatch(likeActions.getLikeFB(myInfo?.uid))
+
+  }, [myInfo])
 
   const handleMoveWriteBtn = () => {
     history.push('/editor')
@@ -38,8 +48,9 @@ const PostList = (props) => {
         <Grid is_container margin="25px auto 0 auto">
           {
             postList.map((post, idx) => {
+              const like_on = likes.some(l => l.post_id === post.id)
               const isMe = post.user_info?.uid === myInfo?.uid
-              return <Post key={idx} {...post} isMe={isMe}/>
+              return <Post key={idx} {...post} isMe={isMe} like_on={like_on}/>
             })
           }
         </Grid>

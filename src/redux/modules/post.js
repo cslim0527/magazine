@@ -2,17 +2,21 @@ import { createAction, handleActions } from 'redux-actions'
 import { produce } from 'immer'
 import { firestore, storage } from '../../shared/firebase'
 import moment from 'moment'
+import { getFirestore, collection, where, query, getDocs, deleteDoc, doc } from "firebase/firestore"
+const db = getFirestore()
 
 const SET_POST = "SET_POST"
 const EDIT_POST = "EDIT_POST"
 const ADD_POST = "ADD_POST"
 const DELETE_POST = "DELETE_POST"
 const SET_LOADING = "SET_LOADING"
+const SET_ESCAPE = "SET_ESCAPE"
 
 const initialState = {
   list: [],
   paging: { start: null, next: null, step: 3 },
-  is_loading: false
+  is_loading: false,
+  escape: false
 }
 
 const initialPost = {
@@ -31,10 +35,63 @@ const initialPost = {
 // action creator
 const setPost = createAction(SET_POST, (post_list, paging) => ({post_list, paging}))
 const addPost = createAction(ADD_POST, (post) => ({post}))
-const deletePost = createAction(DELETE_POST, (post) => ({post}))
+const deletePost = createAction(DELETE_POST, (post_id) => ({post_id}))
 const editPost = createAction(EDIT_POST, (post_id, post) => ({post_id, post}))
 const setLoading = createAction(SET_LOADING, (is_loading) => ({is_loading}))
+const setEscape = createAction(SET_ESCAPE, (escape) => ({escape}))
 
+// middlewares
+const deletePostFB = (post) => {
+  return async (dispatch, getState, { history }) => {
+
+    if (!post) {
+      alert('포스팅 정보가 올바르지 않아 삭제 할 수 없습니다.')
+      return
+    }
+
+    console.log('[deletePostFB]', post)
+
+    const deleteConfirm = window.confirm('삭제하실 경우 게시물 정보를 다시 복구 할 수 없습니다.\n삭제하시겠습니까?')
+
+    if (!deleteConfirm) {
+      return
+    }
+
+    try {
+      await deleteDoc(doc(db, "post", post.post_id))
+
+      if (post.image_id) {
+        const _remove = storage.ref().child(`images/${post.image_id}`)
+        _remove.delete().then(function() {
+          // File deleted successfully
+        }).catch(function(error) {
+          // Uh-oh, an error occurred!
+          console.log('[삭제 오류]', error)
+        })
+      }
+
+      if (post.comment_cnt > 0) {
+        const commentRef = collection(db, "comment");
+        const q = query(commentRef, where("post_id", "==", post.post_id))
+        const querySnapshot = await getDocs(q);
+
+        querySnapshot.forEach( async (comment) => {
+          await deleteDoc(doc(db, "comment", comment.id))
+        })
+      }
+
+      dispatch(deletePost(post.post_id))
+     
+      history.replace('/')
+    }
+    catch(err) {
+      console.log('[error] 존재하지 않는 정보입니다.', err)
+      history.replace('/')
+    }
+   
+    
+  }
+}
 
 const editPostFB = (post_id=null, post ={}) => {
   return (dispatch, getState, { history }) => {
@@ -84,7 +141,6 @@ const editPostFB = (post_id=null, post ={}) => {
   }
 }
 
-// middlewares
 const getPostFB = (start=null, step=3 ) => {
   return (dispatch, getState) => {
 
@@ -195,14 +251,22 @@ const addPostFB = (post) => {
 const getOnePostFB = (id) => {
   return (dispatch, getState) => {
     const postDB = firestore.collection('post')
-    postDB.doc(id).get().then(doc => {
-      const post = {
-        ...doc.data(),
-        id,
-      }
-
-      dispatch(setPost([post]))
-    })
+    postDB
+      .doc(id)
+      .get()
+      .then(doc => {
+        console.log(doc.data())
+        if (!doc.data()) {
+          dispatch(setEscape(true))
+        } else {
+          const post = {
+            ...doc.data(),
+            id,
+          }
+          dispatch(setPost([post]))
+          dispatch(setEscape(false))
+        }
+      })
   }
 }
 
@@ -210,6 +274,7 @@ const getOnePostFB = (id) => {
 export default handleActions({
   [SET_POST]: (state, action) => produce(state, (draft) => {
 
+    console.log('[SET_POST]', '1)', draft.list, '2)', action.payload.post_list)
     draft.list.push(...action.payload.post_list)
 
     draft.list = draft.list.reduce((acc, cur) => {
@@ -234,6 +299,8 @@ export default handleActions({
   }),
 
   [DELETE_POST]: (state, action) => produce(state, (draft) => {
+    const post_id = action.payload.post_id
+    draft.list = draft.list.filter(post => post.id !== post_id)
   }),
 
   [EDIT_POST]: (state, action) => produce(state, (draft) => {
@@ -248,6 +315,10 @@ export default handleActions({
 
   [SET_LOADING]: (state, action) => produce(state, (draft) => {
     draft.is_loading = action.payload.is_loading
+  }),
+
+  [SET_ESCAPE]: (state, action) => produce(state, (draft) => {
+    draft.escape = action.payload.escape
   })
 }, initialState)
 
@@ -259,7 +330,8 @@ const actionCreators = {
   getPostFB,
   addPostFB,
   getOnePostFB,
-  editPostFB
+  editPostFB,
+  deletePostFB
 }
 
 export { actionCreators }
