@@ -21,7 +21,7 @@ const Escape = (props) => {
   useEffect(() => {
     if (count <= 0) {
       clearInterval(interval.current)
-      history.replace('/')
+      history.goBack()
     }
   }, [count])
   return (
