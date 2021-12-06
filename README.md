@@ -11,6 +11,7 @@ https://spartagram-89e5b.web.app/
 - firebase (firestore/cloud storage/firebase Auth)
 
 ## 페이지 소개
+- 회원가입/로그인을 통해 자신의 포스팅을 관리 할 수 있습니다.
 - 일상의 이야기나 사진을 작성하거나 수정 삭제 할 수 있습니다.
 - 포스팅한 글에 댓글을 작성 하거나 삭제 할 수 있습니다.
 - 무한스크롤을 적용하여 필요한 데이터만 그때그때 받아서 노출합니다.
